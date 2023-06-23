@@ -249,10 +249,14 @@ async function init() {
 
       case "View All Employees":
         queryPromise = new Promise((resolve, reject) => {
-          db.query("SELECT * FROM employee", function (err, results) {
-            console.table(results);
-            resolve();
-          });
+          //This query was made after lots of painstaking research about self joins and lots of trial and error in mysql workbench
+          db.query(
+            "SELECT e1.id, e1.first_name, e1.last_name, r.title, r.salary, d.name AS department_name, CONCAT(e2.first_name, ' ', e2.last_name) AS manager FROM employee AS e1 JOIN role AS r ON e1.role_id = r.id JOIN department AS d ON r.department_id = d.id JOIN employee AS e2 ON e1.manager_id = e2.id;",
+            function (err, results) {
+              console.table(results);
+              resolve();
+            }
+          );
         });
         await queryPromise;
         init();
