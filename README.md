@@ -14,7 +14,8 @@
 
 ### Video demonstration here: https://youtu.be/g__-ykcZaQI
 
-This app is a lightweight employee information logging system using SQL to store data. It is called from the command line
+This app is a lightweight employee information logging system using SQL to store data. It is called from the command line <br>
+![](./readmeAssets/Screenshot%202023-06-23%20172843.png)
 
 ## Installation
 
