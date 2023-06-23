@@ -2,90 +2,14 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 var exitProg = false;
 // Connect to database
-const db = mysql.createConnection(
-  {
-    host: "localhost",
-    // MySQL username,
-    user: "root",
-    // MySQL password
-    password: "root",
-    database: "company_db",
-  },
-  console.log(`Connected to the classlist_db database.`)
-);
-
-// const questions = [
-//   {
-//     name: "initQuestion",
-//     type: "list",
-//     message:
-//       "Welcome to Lightweight Employee Logger! Please choose an option below",
-//     choices: [
-//       "View All Departments",
-//       "View All Roles",
-//       "View All Employees",
-//       "Add a Department",
-//       "Add a Role",
-//       "Add an Employee",
-//       "Update an Employee Role",
-//       "Exit",
-//     ],
-//   },
-//   {
-//     name: "addDepartment",
-//     type: "input",
-//     message: "What is the name of the department?",
-//     when: (answers) => answers.initQuestion === "Add a Department",
-//   },
-//   {
-//     name: "addRoleName",
-//     type: "input",
-//     message: "What is the name of the role?",
-//     when: (answers) => answers.initQuestion === "Add a Role",
-//   },
-//   {
-//     name: "addRoleSalary",
-//     type: "input",
-//     message: "What is the salary of the role?",
-//     when: (answers) => answers.initQuestion === "Add a Role",
-//   },
-//   {
-//     name: "addRoleDept",
-//     type: "input",
-//     message: "What is the department ID of the role?",
-//     when: (answers) => answers.initQuestion === "Add a Role",
-//   },
-//   {
-//     name: "addEmployeeFirstName",
-//     type: "input",
-//     message: "What is the first name of the employee?",
-//     when: (answers) => answers.initQuestion === "Add an Employee",
-//   },
-//   {
-//     name: "addEmployeeLastName",
-//     type: "input",
-//     message: "What is the last name of the employee?",
-//     when: (answers) => answers.initQuestion === "Add an Employee",
-//   },
-//   {
-//     name: "addEmployeeRole",
-//     type: "input",
-//     message: "What is the role ID of the employee?",
-//     when: (answers) => answers.initQuestion === "Add an Employee",
-//   },
-//   {
-//     name: "updateEmployee",
-//     type: "input",
-//     message: "What is the ID of the employee you would like to update?",
-//     when: (answers) => answers.initQuestion === "Update an Employee Role",
-//   },
-//   {
-//     name: "updateEmployeeRole",
-//     type: "input",
-//     message: "What is the new role ID of the employee?",
-//     when: (answers) => answers.initQuestion === "Update an Employee Role",
-//   },
-// ];
+const db = mysql.createConnection({
+  host: "localhost",
+  // MySQL username,
+  user: "root",
+  // MySQL password
+  password: "root",
+  database: "company_db",
+});
 
 async function init() {
   let roleArray = [];
@@ -206,6 +130,7 @@ async function init() {
       type: "list",
       message: "What is the new role of the employee?",
       when: (answers) => answers.initQuestion === "Update an Employee Role",
+      choices: roleNameArray,
     },
   ];
 
@@ -216,18 +141,14 @@ async function init() {
   if (answers.initQuestion !== "Exit") {
     switch (answers.initQuestion) {
       case "View All Departments":
-        // db.query("SELECT * FROM department").then((results) => {
-        //   console.table(results);
-        // });
         queryPromise = new Promise((resolve, reject) => {
           db.query("SELECT * FROM department", function (err, results) {
             console.table(results);
-            console.log(results);
             resolve();
           });
         });
         await queryPromise;
-        // console.log("finished query");
+
         init();
         break;
 
@@ -243,7 +164,7 @@ async function init() {
           );
         });
         await queryPromise;
-        // console.log("finished query");
+
         init();
         break;
 
@@ -285,11 +206,6 @@ async function init() {
               deptArray[deptNameArray.indexOf(answers.addRoleDept)].id,
             ],
             function (err, results) {
-              //   console.log(
-              //     `Here's the index returned: ${
-              //       deptArray[deptNameArray.indexOf(answers.addRoleDept)].id
-              //     }`
-              //   );
               console.log("Added Successfully!");
               resolve();
             }
@@ -320,22 +236,30 @@ async function init() {
         await queryPromise;
         init();
         break;
+      case "Update an Employee Role":
+        queryPromise = new Promise((resolve, reject) => {
+          db.query(
+            "UPDATE employee SET role_id = ? WHERE id = ?",
+            [
+              roleArray[roleNameArray.indexOf(answers.updateEmployeeRole)].id,
+              employeeArray[employeeNameArray.indexOf(answers.updateEmployee)]
+                .id,
+            ],
+            function (err, results) {
+              console.log("Updated Successfully!");
+              resolve();
+            }
+          );
+        });
+        await queryPromise;
+        init();
+        break;
     }
   } else {
     exitProg = true;
     console.log("Goodbye!");
     process.exit();
   }
-  //   process.exit();
 }
-//
-//
-//
-//
-//
-//
-//
-//
-//
+
 init();
-// process.exit();
