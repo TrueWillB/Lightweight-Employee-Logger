@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
-var exitProg = false;
 // Connect to database
+//credentials go here:
 const db = mysql.createConnection({
   host: "localhost",
   // MySQL username,
@@ -11,13 +11,18 @@ const db = mysql.createConnection({
   database: "company_db",
 });
 
+//This function handles nearly all of the work
 async function init() {
+  //These are a series of variables used to properly display and match up the user's input with the correct id
   let roleArray = [];
   let roleNameArray = [];
   let deptArray = [];
   let deptNameArray = [];
   let employeeArray = [];
   let employeeNameArray = [];
+
+  //I decided to use promise objects to control the flow of the program and wait for the proper time to get the SQL data
+  //These 3 promises load the data from the tables into variables that can be used later
   let queryPromise = new Promise((resolve, reject) => {
     db.query("SELECT * FROM role", function (err, results) {
       roleArray = results;
@@ -50,6 +55,7 @@ async function init() {
   });
   await queryPromise;
 
+  //This is the list of questions used in prompts for the user input
   let questions = [
     {
       name: "initQuestion",
@@ -136,7 +142,6 @@ async function init() {
 
   var answers = await inquirer.prompt(questions);
 
-  console.log(answers);
   //This allows the user to immediately exit
   if (answers.initQuestion !== "Exit") {
     switch (answers.initQuestion) {
@@ -172,7 +177,7 @@ async function init() {
         queryPromise = new Promise((resolve, reject) => {
           //This query was made after lots of painstaking research about self joins and lots of trial and error in mysql workbench
           db.query(
-            "SELECT e1.id, e1.first_name, e1.last_name, r.title, r.salary, d.name AS department_name, CONCAT(e2.first_name, ' ', e2.last_name) AS manager FROM employee AS e1 JOIN role AS r ON e1.role_id = r.id JOIN department AS d ON r.department_id = d.id JOIN employee AS e2 ON e1.manager_id = e2.id;",
+            "SELECT e1.id, e1.first_name, e1.last_name, r.title, r.salary, d.name AS department_name, CONCAT(e2.first_name, ' ', e2.last_name) AS manager FROM employee AS e1 JOIN role AS r ON e1.role_id = r.id JOIN department AS d ON r.department_id = d.id LEFT JOIN employee AS e2 ON e1.manager_id = e2.id;",
             function (err, results) {
               console.table(results);
               resolve();
@@ -256,8 +261,8 @@ async function init() {
         break;
     }
   } else {
-    exitProg = true;
     console.log("Goodbye!");
+    //exits processes to escape from loop
     process.exit();
   }
 }
